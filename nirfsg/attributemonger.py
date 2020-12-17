@@ -114,7 +114,8 @@ class AttributeMonger:
                 defvals = []
                 if cnt > 0:
                     for cn, v in zip(
-                        tokens[i : i + cnt + 1 : 2], tokens[i + 1 : i + 2 + cnt : 2]
+                        tokens[i : i + 2 * cnt + 1 : 2],
+                        tokens[i + 1 : i + 1 + 2 * cnt : 2],
                     ):
                         n = cn.split("_VAL_")[-1].replace("_", " ").lower()
                         v = int(v)

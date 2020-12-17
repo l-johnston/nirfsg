@@ -613,8 +613,3 @@ def resetdevice(instrument_handle):
     """
     err = reset.call(instrument_handle)
     return [err]
-
-
-if __name__ == "__main__":
-    vi = init("PXI1Slot11")
-    close(vi)

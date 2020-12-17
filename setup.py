@@ -24,7 +24,7 @@ setup(
     name="nirfsg",
     version=get_version(),
     author="Lee Johnston",
-    author_email="lee.johnston@gmail.com",
+    author_email="lee.johnston.100@gmail.com",
     description="Python control of NI RF Signal Generators using NI-RFSG",
     long_description=get_readme(),
     long_description_content_type="text/markdown",

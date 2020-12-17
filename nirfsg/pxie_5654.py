@@ -50,3 +50,30 @@ class AnalogModulation(Subsystem, kind="analog_modulation"):
     def __init__(self, owner):
         super().__init__(owner)
         self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+    def __dir__(self):
+        attrs = super().__dir__()
+        mode = self.mode
+        mode_enum = type(mode)
+        attrs_copy = attrs.copy()
+        if mode == getattr(mode_enum, "none"):
+            for attr in attrs_copy:
+                if (
+                    attr.startswith("am")
+                    or attr.startswith("fm")
+                    or attr.startswith("pm")
+                ):
+                    attrs.remove(attr)
+        elif mode == getattr(mode_enum, "am"):
+            for attr in attrs_copy:
+                if attr.startswith("fm") or attr.startswith("pm"):
+                    attrs.remove(attr)
+        elif mode == getattr(mode_enum, "fm"):
+            for attr in attrs_copy:
+                if attr.startswith("am") or attr.startswith("pm"):
+                    attrs.remove(attr)
+        elif mode == getattr(mode_enum, "pm"):
+            for attr in attrs_copy:
+                if attr.startswith("am") or attr.startswith("fm"):
+                    attrs.remove(attr)
+        return attrs
