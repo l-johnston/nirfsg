@@ -18,8 +18,20 @@ Currently supported models:
 
 ```
 > from nirfsg import PXIe_5654
-> sig_gen = PXIe_5654("PXI1Slot11")
+> sig_gen = PXIe_5654(<resource>)
 > sig_gen.rf_frequency = 2e6 # Hz
 > sig_gen.rf_power = 0 # dBm
 > sig_gen.initiate()
+...
+> sig_gen.close()
+```
+
+As a context manager:
+
+```
+> with PXIe_5654(<resource>) as sig_gen:
+    sig_gen.rf_frequency = 20e9 # Hz
+    sig_gen.rf_power = 13 # dBm
+    sig_gen.initiate()
+    # do some measurements
 ```
