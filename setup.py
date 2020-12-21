@@ -36,4 +36,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Science/Research",
     ],
+    include_package_data=True,
 )

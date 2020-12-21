@@ -35,3 +35,5 @@ As a context manager:
     sig_gen.initiate()
     # do some measurements
 ```
+
+Context manager will close the session at exit, which will stop generation.
