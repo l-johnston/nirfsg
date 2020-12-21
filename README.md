@@ -1,4 +1,4 @@
-![Build Status](https://github.com/l-johnston/nirfsg/workflows/publish/badge.svg)
+![publish](https://github.com/l-johnston/nirfsg/workflows/publish/badge.svg)
 ![PyPI](https://img.shields.io/pypi/v/nirfsg?style=plastic)
 # `nirfsg`
 Python control of NI RF Signal Generators using NI-RFSG
