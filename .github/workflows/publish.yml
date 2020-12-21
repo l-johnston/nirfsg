@@ -2,7 +2,7 @@ name: publish
 on:
   push:
     branches:
-      - main
+      - master
 env:
   MAJOR: 0
   MINOR: 1
