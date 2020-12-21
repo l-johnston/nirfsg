@@ -1,7 +1,8 @@
 """NI-RFSG attributemonger"""
 from functools import wraps
 from pathlib import Path
-from enum import IntEnum
+from enum import Enum
+from datetime import timedelta
 from nirfsg import c_api
 
 
@@ -35,14 +36,25 @@ class Attribute:
         """Value of the attribute"""
         value = self._get(self._vi, self._channel, self.id)
         if self.defined_values is not None:
-            return self.defined_values(value)
+            value = self.defined_values(value)
+        elif self.c_type == c_api.ViBoolean:
+            value = bool(value)
+        elif self.c_api_name == "NIRFSG_ATTR_EXTERNAL_CALIBRATION_RECOMMENDED_INTERVAL":
+            value = timedelta(days=value / 12 * 365)
+        elif self.c_api_name == "NIRFSG_ATTR_AUTOMATIC_THERMAL_CORRECTION":
+            value = bool(value)
         return value
 
     @value.setter
     def value(self, new_value):
-        if self.defined_values is not None and isinstance(new_value, str):
+        if self.defined_values is not None:
             new_value = getattr(self.defined_values, new_value, new_value)
+            if hasattr(new_value, "value"):
+                new_value = new_value.value
         self._set(self._vi, self._channel, self.id, new_value)
+
+    def __eq__(self, other):
+        return self.id == other.id
 
 
 class SupportedModels(list):
@@ -117,10 +129,15 @@ class AttributeMonger:
                         tokens[i : i + 2 * cnt + 1 : 2],
                         tokens[i + 1 : i + 1 + 2 * cnt : 2],
                     ):
-                        n = cn.split("_VAL_")[-1].replace("_", " ").lower()
-                        v = int(v)
+                        n = (
+                            cn.split("_VAL_")[-1]
+                            .replace("_", " ")
+                            .replace(" STR", "")
+                            .lower()
+                        )
+                        v = int(v) if v.isdecimal() else v
                         defvals.append([n, v])
-                defvals = IntEnum(name, defvals) if len(defvals) > 0 else None
+                defvals = Enum(name, defvals) if len(defvals) > 0 else None
                 self._attributes[name] = Attribute(
                     c_api_name, attr_id, c_type, subsystem, name, supmods, defvals
                 )

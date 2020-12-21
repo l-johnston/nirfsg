@@ -1,6 +1,7 @@
 """Common definitions"""
 from abc import ABC, abstractmethod
 import nirfsg.c_api as c_api
+from nirfsg.attributemonger import get_attributes
 
 
 class niBase(ABC):
@@ -67,7 +68,7 @@ class Subsystem(niBase):
         cls._kind = kind
 
     def __repr__(self):
-        return f"<{self.owner} Subsystem:{self._kind}>"
+        return f"<{self._owner} Subsystem:{self._kind}>"
 
 
 class SignalGenerator(niBase):
@@ -135,3 +136,116 @@ class SignalGenerator(niBase):
     def close(self):
         """Stop signal generation and close driver session"""
         c_api.close(self._vi)
+
+
+class ConfigurationList(Subsystem, kind="configuration_list"):
+    """Configuration list subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+        self.lists = []
+
+    def create(self, name, attributes):
+        """Create a new configuration list
+
+        Parameters
+        ----------
+        name : str
+        attributes : List[str]
+            {'rf_frequency', 'rf_power'}
+        """
+        viattrs = []
+        for attr in attributes:
+            viattrs.append(self._owner._attrs[attr].id)
+        c_api.create_configurationlist(self._vi, name, viattrs)
+        self.lists.append(name)
+
+    def add_step(self):
+        """Add a new step to the active configuration list"""
+        c_api.create_configurationlist_step(self._vi)
+
+
+class StartTrigger(Subsystem, kind="start_trigger"):
+    """Start trigger subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+    def __dir__(self):
+        attrs = super().__dir__()
+        trigtype = self.type
+        trigtype_enum = type(trigtype)
+        if trigtype == getattr(trigtype_enum, "none"):
+            if "edge" in attrs:
+                attrs.remove("edge")
+            if "source" in attrs:
+                attrs.remove("source")
+        elif trigtype == getattr(trigtype_enum, "digital edge"):
+            if "software" in attrs:
+                attrs.remove("software")
+        elif trigtype == getattr(trigtype_enum, "software"):
+            if "digital edge" in attrs:
+                attrs.remove("edge")
+                attrs.remove("source")
+        return attrs
+
+
+class ConfigurationListTrigger(Subsystem, kind="configurationlist_trigger"):
+    """Configuration List trigger subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+
+class Events(Subsystem, kind="events"):
+    """Events subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+
+class ExternalCalibration(Subsystem, kind="external_cal"):
+    """External calibration subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+    @property
+    def date(self):
+        """Last external calibration date
+
+        Returns
+        -------
+        date : datetime
+        """
+        return c_api.get_lastexternalcaldatetime(self._vi)

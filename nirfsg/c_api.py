@@ -13,6 +13,7 @@ from ctypes import (
     byref,
     create_string_buffer,
     c_double,
+    c_int64,
 )
 from datetime import datetime
 
@@ -72,7 +73,10 @@ pViBoolean = POINTER(ViBoolean)
 ViSession = c_uint32
 ViInt32 = c_int32
 pViInt32 = POINTER(ViInt32)
+ViInt64 = c_int64
+pViInt64 = POINTER(ViInt64)
 ViAttr = c_uint32
+pViAttr = POINTER(ViAttr)
 ViReal64 = c_double
 pViReal64 = POINTER(ViReal64)
 ViString = c_char_p
@@ -369,6 +373,27 @@ def get_attribute_int32(instrument_handle, channel, viattr):
     return [value.value, err]
 
 
+@check_error
+@c_api("niRFSG_GetAttributeViInt64", (ViSession, c_char_p, ViAttr, pViInt64), ViStatus)
+def get_attribute_int64(instrument_handle, channel, viattr):
+    """Get the integer attribute for given channel
+
+    Parameters
+    ----------
+    instrument_handle : ViSession
+    channel : str
+    viattr : ViAttr
+
+    Returns
+    -------
+    value : int
+    """
+    channel = ViConstString(channel.encode())
+    value = ViInt64()
+    err = get_attribute_int64.call(instrument_handle, channel, viattr, byref(value))
+    return [value.value, err]
+
+
 def get_instrument_model(instrument_handle):
     """Get instrument model
 
@@ -462,17 +487,36 @@ def set_attribute_int32(instrument_handle, channel, viattr, value):
     return [err]
 
 
+@check_error
+@c_api("niRFSG_SetAttributeViInt64", (ViSession, c_char_p, ViAttr, ViInt64), ViStatus)
+def set_attribute_int64(instrument_handle, channel, viattr, value):
+    """Set the integer attribute for given channel
+
+    Parameters
+    ----------
+    instrument_handle : ViSession
+    channel : str
+    viattr : ViAttr
+    value : int
+    """
+    channel = ViConstString(channel.encode())
+    err = set_attribute_int32.call(instrument_handle, channel, viattr, value)
+    return [err]
+
+
 GETLU = {
     ViReal64: get_attribute_float,
     ViString: get_attribute_string,
     ViBoolean: get_attribute_bool,
     ViInt32: get_attribute_int32,
+    ViInt64: get_attribute_int64,
 }
 SETLU = {
     ViReal64: set_attribute_float,
     ViString: set_attribute_string,
     ViBoolean: set_attribute_bool,
     ViInt32: set_attribute_int32,
+    ViInt64: set_attribute_int64,
 }
 
 
@@ -612,4 +656,41 @@ def resetdevice(instrument_handle):
     instrument_handle : ViSession
     """
     err = reset.call(instrument_handle)
+    return [err]
+
+
+@check_error
+@c_api(
+    "niRFSG_CreateConfigurationList",
+    (ViSession, ViConstString, ViInt32, pViAttr, ViBoolean),
+    ViStatus,
+)
+def create_configurationlist(instrument_handle, name, attributes):
+    """Create a new configuration list and set as active list
+
+    Parameters
+    ----------
+    instrument_handle : ViSession
+    name : str
+    attributes : List[ViAttr]
+    """
+    name = ViConstString(name.encode())
+    attrarraytype = ViAttr * len(attributes)
+    attrarray = attrarraytype(*attributes)
+    err = create_configurationlist.call(
+        instrument_handle, name, len(attributes), attrarray, True
+    )
+    return [err]
+
+
+@check_error
+@c_api("niRFSG_CreateConfigurationListStep", (ViSession, ViBoolean), ViStatus)
+def create_configurationlist_step(instrument_handle):
+    """Create a new step and set as active step
+
+    Parameters
+    ----------
+    instrument_handle : ViSession
+    """
+    err = create_configurationlist_step.call(instrument_handle, True)
     return [err]

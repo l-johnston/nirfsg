@@ -1,6 +1,14 @@
 """PXIe-5654 20 GHz analog signal generator"""
 import nirfsg.c_api as c_api
-from nirfsg.common import SignalGenerator, Subsystem
+from nirfsg.common import (
+    SignalGenerator,
+    Subsystem,
+    ConfigurationList,
+    StartTrigger,
+    ConfigurationListTrigger,
+    Events,
+    ExternalCalibration,
+)
 from nirfsg.attributemonger import get_attributes
 
 
@@ -27,6 +35,11 @@ class PXIe_5654(SignalGenerator):
         self._attrs.update(get_attributes(self._vi, subsystem="channel"))
         self._channel = ""
         self.modulation = AnalogModulation(self)
+        self.clock = RefClock(self)
+        self.configurationlist = ConfigurationList(self)
+        self.triggers = Triggers(self)
+        self.events = Events(self)
+        self.external_cal = ExternalCalibration(self)
 
     def configure_rf(self, frequency, power):
         """Configure RF frequency and power
@@ -77,3 +90,46 @@ class AnalogModulation(Subsystem, kind="analog_modulation"):
                 if attr.startswith("am") or attr.startswith("fm"):
                     attrs.remove(attr)
         return attrs
+
+
+class RefClock(Subsystem, kind="clock"):
+    """Reference clock subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self._attrs = get_attributes(self._vi, subsystem=self._kind)
+
+
+class Triggers(Subsystem, kind="triggers"):
+    """Triggers subsystem
+
+    Parameters
+    ----------
+    owner : niBase
+    """
+
+    def __init__(self, owner):
+        super().__init__(owner)
+        self.start_trigger = StartTrigger5654(self)
+        self.configurationlist_trigger = ConfigurationListTrigger(self)
+
+
+class StartTrigger5654(StartTrigger, kind="start_trigger"):
+    """Start trigger for PXIe-5654"""
+
+    def __dir__(self):
+        attrs = super().__dir__()
+        if "software" in attrs:
+            attrs.remove("software")
+        return attrs
+
+
+if __name__ == "__main__":
+    sg = PXIe_5654("PXI1Slot11")
+    sg.triggers.configurationlist_trigger.type = "digital edge"
+    sg.close()

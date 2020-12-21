@@ -1,14 +1,19 @@
+![Build Status](https://github.com/l-johnston/nirfsg/workflows/publish/badge.svg)
+![PyPI](https://img.shields.io/pypi/v/nirfsg?style=plastic)
 # `nirfsg`
 Python control of NI RF Signal Generators using NI-RFSG
 
 ## Installation
-After cloning repo:
+
+    > pip install nirfsg
+
+Or, after cloning repo:
 
     > pip install .
 
 ## Documentation
 Currently supported models:
-- PXIe-5654 (partial)
+- PXIe-5654
 
 
 ```

@@ -1,0 +1,29 @@
+name: publish
+on:
+  push:
+    branches:
+      - main
+env:
+  MAJOR: 0
+  MINOR: 1
+  MICRO: ${{ github.run_number }}
+  TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel twine
+    - name: Build and publish
+      run: |
+        python nirfsg/version.py $MAJOR $MINOR $MICRO
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
