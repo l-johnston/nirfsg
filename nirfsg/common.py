@@ -137,6 +137,10 @@ class SignalGenerator(niBase):
         """Stop signal generation and close driver session"""
         c_api.close(self._vi)
 
+    def wait_until_settled(self):
+        """Wait unit output is settled to new frequency/power setting"""
+        c_api.waituntilsettled(self._vi)
+
 
 class ConfigurationList(Subsystem, kind="configuration_list"):
     """Configuration list subsystem
