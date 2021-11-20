@@ -1,6 +1,8 @@
 name: publish
 on:
   push:
+    paths-ignore:
+      - 'README.md'
     branches:
       - master
 env:
