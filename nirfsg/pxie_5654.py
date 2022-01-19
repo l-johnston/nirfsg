@@ -127,9 +127,3 @@ class StartTrigger5654(StartTrigger, kind="start_trigger"):
         if "software" in attrs:
             attrs.remove("software")
         return attrs
-
-
-if __name__ == "__main__":
-    sg = PXIe_5654("PXI1Slot11")
-    sg.triggers.configurationlist_trigger.type = "digital edge"
-    sg.close()

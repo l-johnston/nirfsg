@@ -3,6 +3,7 @@ from functools import wraps
 from pathlib import Path
 from enum import Enum
 from datetime import timedelta
+import copy
 from nirfsg import c_api
 
 
@@ -152,7 +153,7 @@ class AttributeMonger:
                 attr._vi = instrument_handle
                 attr._channel = channel
                 attrs[name] = attr
-        return attrs
+        return copy.deepcopy(attrs)
 
 
 get_attributes = AttributeMonger()
