@@ -140,6 +140,17 @@ class SignalGenerator(niBase):
     def wait_until_settled(self):
         """Wait unit output is settled to new frequency/power setting"""
         c_api.waituntilsettled(self._vi)
+    
+    def self_test(self):
+        """Perform niRFSG self test
+        
+        Returns
+        -------
+        tuple (result : bool, message : str)
+            result = 0 indicates that the device is powered-up and responding
+            result = 1 indicates a self test failure
+        """
+        return tuple(c_api.self_test(self._vi))
 
 
 class ConfigurationList(Subsystem, kind="configuration_list"):
