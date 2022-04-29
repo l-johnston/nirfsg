@@ -4,6 +4,7 @@ import sys
 import pathlib
 from functools import wraps
 from ctypes import (
+    c_int16,
     cdll,
     c_int32,
     c_uint16,
@@ -81,6 +82,8 @@ ViReal64 = c_double
 pViReal64 = POINTER(ViReal64)
 ViString = c_char_p
 ViConstString = c_char_p  # constant
+ViInt16 = c_int16
+pViInt16 = POINTER(ViInt16)
 IVI_MAX_MESSAGE_LEN = 255
 IVI_MAX_MESSAGE_BUF_SIZE = IVI_MAX_MESSAGE_LEN + 1
 NIRFSG_ATTR_INSTRUMENT_MODEL = 1050512  # ViString
@@ -694,3 +697,22 @@ def create_configurationlist_step(instrument_handle):
     """
     err = create_configurationlist_step.call(instrument_handle, True)
     return [err]
+
+@check_error
+@c_api("niRFSG_self_test", (ViSession, pViInt16, ViString), ViStatus)
+def self_test(instrument_handle):
+    """Self test
+    
+    Parameters
+    ----------
+    instrument_handle : ViSession
+
+    Returns
+    -------
+    list [result : bool, message : str]
+    """
+    result = ViInt16()
+    message = create_string_buffer(IVI_MAX_MESSAGE_BUF_SIZE)
+    err = self_test.call(instrument_handle, byref(result), message)
+    message = message.value.decode()
+    return [bool(result), message, err]
